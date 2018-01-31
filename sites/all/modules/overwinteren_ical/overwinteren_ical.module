@@ -1,0 +1,122 @@
+<?php
+require_once 'src/ICal/ICal.php';
+
+use ICal\ICal;
+
+/**
+ * overwinteren_ical_menu registering json route
+ * @return array Return the $items array to register the path
+ */
+function overwinteren_ical_menu() {
+  $items = array();
+
+  // The path that the endpoint will be registered to
+  $items['api/ical-convert.json'] = array(
+    'page callback' => 'overwinteren_ical_page_callback',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  // Return the $items array to register the path
+  return $items;
+}
+
+/**
+ * overwinteren_ical_page_callback callback for the api endpoint : envoke the convert function
+ * @return array Return the converted data
+ */
+function overwinteren_ical_page_callback() {
+  // get the 'url' parameter from uri
+  $params = drupal_get_query_parameters();
+
+  // get the data that was converted
+  $data = overwinteren_ical_convert($params);
+
+  return (!empty($data)) ? drupal_json_output($data) : [];
+}
+
+
+/**
+ * Implements of hook_node_view().
+ *
+ * before loading the chosen node type and if has field_kalender_link field :
+ * add the custom CSS and Javascripts
+ */
+function overwinteren_ical_node_view($node, $view_mode) {
+  // TO DO : custom selection by user menu
+  //$types = variable_get('overwinteren_node_types', array());
+  
+  // for which node types
+  $types = ["advertentie_provisiebasis", "advertentie"];
+
+  $full = ($view_mode == 'full') ? TRUE : FALSE;
+
+  $showForNodes = (in_array($node->type, $types));
+
+  if ($full && $showForNodes) {
+    $ical_link = !empty($node->field_kalender_link) ? $node->field_kalender_link['und'][0]['value'] : NULL;
+
+    if ($ical_link) {
+      drupal_add_css(drupal_get_path('module', 'overwinteren_ical') . '/js/rome/dist/rome.css');
+      drupal_add_js(drupal_get_path('module', 'overwinteren_ical') . '/js/rome/dist/rome.min.js');
+      drupal_add_js(drupal_get_path('module', 'overwinteren_ical') . '/js/ical.js');
+    }
+  }
+}
+
+/**
+ * overwinteren_ical_convert convert the ical
+ * @param  array $params parameters from drupal_get_query_parameters
+ * @return array 
+ */
+function overwinteren_ical_convert($params) {
+  try {
+    if (!empty($params) && isset($params['url'])) {
+      $url = $params['url'];
+    } else {
+      return false;
+    }
+
+    $ical = new ICal( (string) $url, array(
+        //'defaultSpan'           => 2,     // Default value
+        'defaultTimeZone'       => 'CET',
+        //'defaultWeekStart'      => 'MO',  // Default value
+        //'skipRecurrence'        => false, // Default value
+        //'useTimeZoneWithRRules' => false, // Default value
+    ));
+
+    $events = $ical->eventsFromInterval('1 year');
+    //$ical->initUrl('url.ics');
+      
+      // all reserved days
+    $alleventDays = [];
+    foreach ($events as $i => $event) {
+
+      $dtStart = substr($event->dtstart, 0, 8);
+      $dtEnd = substr($event->dtend, 0, 8);
+
+      $begin =  DateTime::createFromFormat( 'Ymd', $dtStart );
+      $end =  DateTime::createFromFormat( 'Ymd', $dtEnd )->add(new DateInterval('P1D'));
+
+      $interval = DateInterval::createFromDateString('1 day');
+      $period = new DatePeriod($begin, $interval, $end);
+
+      foreach ( $period as $dt ) {
+        $alleventDays[] = $dt->format( "Y-m-d" );
+      }
+      /*
+      foreach ( $alleventDays as $j => $day ) {
+        $output[$j]["title"] = "";
+        $output[$j]["description"] = "";
+        $output[$j]["datetime"]["y"] = substr($day, 0, 4);
+        $output[$j]["datetime"]["m"] = substr($day, 5, 2);
+        $output[$j]["datetime"]["d"] = substr($day, 8, 2);
+      }
+      */
+    }
+    return $alleventDays;
+
+  } catch (\Exception $e) {
+      die($e);
+  }
+}

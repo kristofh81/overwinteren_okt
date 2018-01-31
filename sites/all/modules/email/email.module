@@ -1,0 +1,1185 @@
+<?php
+
+/**
+ * @file
+ * Module file for the email module, which creates a email address field.
+ */
+
+/**
+ * Implements hook_field_info().
+ */
+function email_field_info() {
+  return array(
+    'email' => array(
+      'label' => 'Email',
+      'description' => t('This field stores and renders email addresses.'),
+      'default_widget' => 'email_textfield',
+      'default_formatter' => 'email_default',
+      'property_type' => 'text',
+    ),
+  );
+}
+
+/**
+ * Implements hook_migrate_api().
+ */
+function email_migrate_api() {
+  return array(
+    'api' => 2,
+    'field handlers' => array('MigrateEmailFieldHandler'),
+  );
+}
+
+/**
+ * Implements hook_field_validate().
+ *
+ * Possible error codes:
+ * - 'email_invalid': The email address is not valid
+ */
+function email_field_validate($obj_type, $object, $field, $instance, $langcode, $items, &$errors) {
+  foreach ($items as $delta => $item) {
+    if ($item['email'] != '' && !valid_email_address(trim($item['email']))) {
+      $message = t('"%mail" is not a valid email address', array('%mail' => $item['email']));
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => "email_invalid",
+        'message' => $message,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_field_widget_error().
+ */
+function email_field_widget_error($element, $error, $form, &$form_state) {
+  form_error($element, $error['message']);
+}
+
+/**
+ * Implements hook_content_is_empty().
+ */
+function email_field_is_empty($item, $field) {
+  if (empty($item['email'])) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ *
+ */
+function email_field_formatter_info() {
+  $formats = array(
+    'email_default' => array(
+      'label' => t('Default email link'),
+      'description' => t('Display the email address as a mailto link.'),
+      'field types' => array('email'),
+    ),
+    'email_contact' => array(
+      'label' => t('Email contact form'),
+      'description' => t('Display a contact form.'),
+      'field types' => array('email'),
+    ),
+    'email_plain' => array(
+      'label' => t('Email plain text'),
+      'description' => t('Display the email address as plain text.'),
+      'field types' => array('email'),
+    ),
+  );
+  if (module_exists('spamspan')) {
+    $formats += array(
+      'email_spamspan' => array(
+        'label' => t('Email SpamSpan'),
+        'field types' => array('email'),
+      ),
+    );
+  }
+  return $formats;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function email_field_formatter_view($object_type, $object, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch ($display['type']) {
+    case 'email_default':
+      foreach ($items as $delta => $item) {
+        $output = l($item['email'], 'mailto:' . $item['email']);
+        $element[$delta] = array('#markup' => $output);
+      }
+      break;
+
+    case 'email_contact':
+      $ids = entity_extract_ids($object_type, $object);
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => l(t('Contact person by email'), 'email/' . $object_type . '/' . $ids[0] . '/' . $instance['field_name']));
+        // Since email is always sent to first item's email, break after any email address found.
+        break;
+      }
+      break;
+
+    case 'email_plain':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array('#markup' => check_plain($item['email']));
+      }
+      break;
+
+    case 'email_spamspan':
+      foreach ($items as $delta => $item) {
+        if (module_exists('spamspan')) {
+          $element[$delta] = array('#markup' => spamspan($item['email']));
+        }
+        else {
+          $output = l($item['email'], 'mailto:' . $item['email']);
+          $element[$delta] = array('#markup' => $output);
+        }
+      }
+      break;
+  }
+  return $element;
+}
+
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function email_field_widget_info() {
+  return array(
+    'email_textfield' => array(
+      'label' => t('Text field'),
+      'field types' => array('email'),
+      'settings' => array('size' => 60),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_settings_form().
+ */
+function email_field_widget_settings_form($field, $instance) {
+  $widget = $instance['widget'];
+  $settings = $widget['settings'];
+
+  $form['size'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Size of textfield'),
+    '#default_value' => $settings['size'],
+    '#required' => TRUE,
+    '#element_validate' => array('_element_validate_integer_positive'),
+  );
+  return $form;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function email_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $base) {
+  $element = $base;
+  $element['email'] = $base + array(
+    '#type' => 'textfield',
+    '#default_value' => isset($items[$delta]['email']) ? $items[$delta]['email'] : NULL,
+    '#size' => $instance['widget']['settings']['size'],
+    '#prefix' => '<div class="text-full-wrapper">',
+    '#suffix' => '</div>',
+  );
+  return $element;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function email_menu() {
+  $items['email/%/%/%'] = array(
+    'title' => 'Email Contact Form',
+    'page callback' => 'email_mail_page',
+    'page arguments' => array(1, 2, 3),
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/content/email'] = array(
+    'title' => 'Email Contact Form Settings',
+    'description' => 'Administer flood control settings for email contact forms',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('email_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * Access callback for the email contact page.
+ *
+ * Checks whether the current user has view access to the entity. Access checks
+ * are performed for the fieldable core entity types, including nodes, users,
+ * comments and taxonomy terms. Furthermore entity types using Entity API's
+ * access system are supported. For custom entity types that are not using the
+ * Entity API, at least the access content permission is checked in the menu
+ * access callback.
+ *
+ * This function is called within the email page callback, as it takes care of
+ * loading the entity itself. If the entity is found, access checks are
+ * performed with this function.
+ *
+ * @param $entity_type
+ *   The entity type
+ * @param $entity
+ *   The entity for which the access should be checked
+ * @param $field_info
+ *   The field info for the email field.
+ *
+ * @return TRUE if the current user has view access, otherwise FALSE.
+ */
+function email_mail_page_access($entity_type, $entity, $field_info) {
+  // Check for field access.
+  if (!field_access('view', $field_info, $entity_type, $entity)) {
+    return FALSE;
+  }
+
+  // Check the access for fieldable core entities, including nodes, users,
+  // comments and taxonomy terms.
+  if ($entity_type == 'node') {
+    return node_access('view', $entity);
+  }
+  elseif ($entity_type == 'user') {
+    global $user;
+    if ($entity->uid == $user->uid && $entity->uid) {
+      return TRUE;
+    }
+    if (user_access('administer users') || (user_access('access user profiles') && $entity->status)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  elseif ($entity_type == 'comment') {
+    return comment_access('view', $entity);
+  }
+  elseif ($entity_type == 'taxonomy_term') {
+    if (user_access('administer taxonomy') || user_access('access content')) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  // Use Entity API for checking the view access for non-core entity types, if
+  // the module is installed.
+  if (module_exists('entity')) {
+    return entity_access('view', $entity_type, $entity);
+  }
+  return TRUE;
+}
+
+/**
+ * The contact form page.
+ */
+function email_mail_page($object_type, $object_id, $field_name) {
+  if (!is_numeric($object_id)) {
+    return MENU_NOT_FOUND;
+  }
+  // Verify this is an email field.
+  $field_info = field_info_field($field_name);
+  if (!isset($field_info) || $field_info['type'] != 'email') {
+    return MENU_NOT_FOUND;
+  }
+
+  // Check that the entity exists.
+  $objects = entity_load($object_type, array($object_id));
+  if (!isset($objects[$object_id])) {
+    return MENU_NOT_FOUND;
+  }
+  $object = $objects[$object_id];
+
+  // Check that the entity has the email field.
+  if (!isset($object->$field_name)) {
+    return MENU_NOT_FOUND;
+  }
+
+  // Check if the current user has access to the entity and to the field.
+  if (!email_mail_page_access($object_type, $object, $field_info)) {
+    return MENU_ACCESS_DENIED;
+  }
+
+  if($field_name == "field_reserveringsaanvraag_email" || $field_name == "field_meer_info_email") {
+    $email = "els@overwinteren.nl";
+  } else {
+     //use the first email address as receiver
+    $field = array_pop($object->$field_name);
+    foreach ($field as $delta => $item) {
+      if (!empty($item['email'])) {
+        $email = $item['email'];
+        break;
+      }
+    }
+
+    //verify that the email address is not empty
+    if (empty($email)) {
+      return MENU_NOT_FOUND;
+    }
+  }
+ 
+  $entity_info = entity_extract_ids($object_type, $object);
+  $settings = field_info_instance($object_type, $field_name, $entity_info[2]);
+  $found = FALSE;
+  foreach ($settings['display'] as $display_name => $display_data) {
+    if (isset($display_data['type']) && ($display_data['type'] === 'email_contact')) {
+      $found = TRUE;
+      break;
+    }
+  }
+  if (!$found) {
+    return MENU_NOT_FOUND;
+  }
+
+  if (!flood_is_allowed('email', variable_get('email_hourly_threshold', 5))) {
+    return t("You cannot send more than %number messages per hour. Please try again later.", array('%number' => variable_get('email_hourly_threshold', 5)));
+  }
+
+  return drupal_get_form('email_mail_page_form', $object_type, $object_id, $field_name, $email);
+}
+
+/**
+ * Contact form
+ */
+function email_mail_page_form($form, $form_state, $object_type, $object_id, $field_name, $email) {
+  global $user;
+
+  $form['object_id'] = array(
+    '#type' => 'value',
+    '#value' => $object_id,
+  );
+  $form['object_type'] = array(
+    '#type' => 'value',
+    '#value' => $object_type,
+  );
+  $form['field_name'] = array(
+    '#type' => 'value',
+    '#value' => $field_name,
+  );
+  $form['email'] = array(
+    '#type' => 'value',
+    '#value' => $email,
+  );
+
+   //
+  if($field_name == "field_reserveringsaanvraag_email") {
+    $form['text-reservatie'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Please fill out this reservation form completely.<br><br>
+By filling out the reservation form you state that you wish to rent this accommodation. <br><br>
+The booking is definite when the owner has agreed definitely and the first deposit has been received by the owner. <br><br>
+We will send the reservation form to the owner. He will be responsible for the further handling of the booking and payments. <br>
+You will receive a response to your request as soon as possible.')
+    );
+
+    $form['name'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your name'),
+      '#maxlength' => 255,
+      '#default_value' => $user->uid ? $user->name : '',
+      '#required' => TRUE,
+    );
+
+     $form['surname'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your surname'),
+      '#maxlength' => 255,
+      '#default_value' => $user->uid ? $user->name : '',
+      '#required' => TRUE,
+    );
+
+    $form['address'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your address'),
+      '#maxlength' => 255,
+      '#required' => TRUE,
+    );
+
+    $form['location'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your postcode and place of residence'),
+      '#maxlength' => 255,
+      '#required' => TRUE,
+    );
+
+    $form['country'] = array(
+      '#type' => 'select',
+      '#options' => countryNames(),
+      '#required' => TRUE,
+      '#title' => t('Your country of residence'),
+    );
+
+    $form['birthdate'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your date of birth'),
+      '#maxlength' => 24,
+    );
+
+    $form['phone'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your phone number'),
+      '#maxlength' => 24,
+      '#required' => TRUE,
+    );
+
+    $form['mail'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your e-mail address'),
+      '#maxlength' => 255,
+      '#default_value' => $user->uid ? $user->mail : '',
+      '#required' => TRUE,
+    );
+
+    $form['mail-control'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Re-type your e-mail address'),
+      '#maxlength' => 255,
+      '#required' => TRUE,
+    );
+
+    /*
+    $today = date('d/m/Y');
+    $current = strtotime($today);
+    for ($i = 0; $i < 365; $i++) {
+      $dates[] = date('d/m/Y', $current);
+      $current = strtotime( '+1 day', $current );
+    }
+    */
+   
+    $form['firstday'] = array(
+      '#type' => 'date_popup',
+      '#date_format' => 'd-m-Y',
+      '#required' => TRUE,
+      '#description' => t('Select the day of arrival')
+    );
+
+    $form['lastday'] = array(
+      '#type' => 'date_popup',
+      '#date_format' => 'd-m-Y',
+      '#required' => TRUE,
+      '#description' => t('Select the day of departure')
+    );
+
+    /*
+
+    for ($j = 1; $j < 365; $j++) {
+      $days[$j] = $j;
+    }
+
+    $form['totaldays'] = array(
+      '#type' => 'select',
+      '#options' => $days,
+      '#required' => TRUE,
+      '#title' => t('Total of nights'),
+      '#description' => t('For how many nights?')
+    );
+
+    */
+
+    //if(isset($_GET["max-persons"])){
+    //  $maxPersons = (int) htmlspecialchars(urldecode($_GET["max-persons"]));
+
+    //  if (is_integer($maxPersons)) {
+    //    for ($k = 1; $k <= $maxPersons; $k++) {
+    //      $persons[$k] = $k;
+    //    }
+    //  } 
+    //} else {
+       for ($k = 1; $k < 16; $k++) {
+        $persons[$k] = $k;
+      }
+    //}
+
+    $form['persons'] = array(
+      '#type' => 'select',
+      '#options' => $persons,
+      '#required' => TRUE,
+      '#title' => t('Number of persons'),
+      '#description' => t('For how many persons do you book?')
+    );
+
+    $reservationCode = "ADVPR-" . $object_id . "/" . date("d-m-y/H-i");
+
+    $form['reservation-code'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Personal reservation code'),
+      '#default_value' => $reservationCode,
+      '#attributes' => array('readonly' => 'readonly'),
+      '#required' => TRUE,
+    );
+
+    $form['message'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Remarks'),
+    );
+
+    $form['subject'] = array(
+      '#type' => 'hidden',
+      '#value' => '',
+    );
+
+    $form['newsletter'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Newsletter'),
+      '#description' => t('If you wish to receive the Overwinter newsletter, you can click this box'),
+    );
+
+    if (isset($_GET["price"])) {
+      $form['price'] = array(
+        '#type' => 'hidden',
+        '#value' => htmlspecialchars(urldecode($_GET["price"])),
+      );
+    }
+
+    if (isset($_GET["type"])) {
+      $form['type'] = array(
+        '#type' => 'hidden',
+        '#value' => htmlspecialchars(urldecode($_GET["type"])),
+      );
+    }
+
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Send e-mail'),
+      '#validate' => array('email_mail_page_form_validate'),
+      '#submit' => array('email_mail_page_form_submit'),
+    );
+
+  } else {
+
+    $form['name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Your name'),
+    '#maxlength' => 255,
+    '#default_value' => $user->uid ? $user->name : '',
+    '#required' => TRUE,
+    );
+    $form['mail'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your e-mail address'),
+      '#maxlength' => 255,
+      '#default_value' => $user->uid ? $user->mail : '',
+      '#required' => TRUE,
+    );
+    $form['phone'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Your phone number'),
+      '#maxlength' => 24,
+    );
+    $form['subject'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Subject'),
+      '#maxlength' => 255,
+      '#required' => TRUE,
+    );
+    $form['message'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Message'),
+      '#required' => TRUE,
+    );
+
+    if($field_name == "field_meer_info_email") {
+      $form['newsletter'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Newsletter'),
+      '#description' => t('If you wish to receive the Overwinter newsletter, you can click this box'),
+      );
+    }
+
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Send e-mail'),
+      '#validate' => array('email_mail_page_form_validate'),
+      '#submit' => array('email_mail_page_form_submit'),
+    );
+  }
+
+  return $form;
+}
+
+/**
+ * Validate the site-wide contact page form submission.
+ */
+function email_mail_page_form_validate($form, &$form_state) {
+  if (!valid_email_address($form_state['values']['mail'])) {
+    form_set_error('mail', t('You must enter a valid e-mail address.'));
+  }
+
+  // validation reservation form
+  if (isset($form_state['values']['mail']) && isset($form_state['values']['mail-control'])) {
+    if ($form_state['values']['mail'] != $form_state['values']['mail-control']) {
+        form_set_error('mail-control', t('E-mail addresses are not the same'));
+      }
+  }
+
+   // validation reservatino form
+  if (isset($form_state['values']['firstday']) && isset($form_state['values']['lastday'])) {
+
+    if (!$form_state['values']['firstday']['date'] || !$form_state['values']['lastday']['date'] ) { 
+      form_set_error('date', t('Fill in the dates'));
+    } elseif (isset($form_state['values']['firstday']) && $form_state['values']['firstday'] != "") {
+      $firstday = $form_state['values']['firstday'];
+      $dateFirst = \DateTime::createFromFormat('Y-m-d', $firstday);
+      $now = new DateTime();
+
+      if ($dateFirst < $now) {   
+        form_set_error('date', t('Date of arrival cannot be in the past'));
+      }
+
+       // validation reservatino form
+      if (isset($form_state['values']['lastday']) && $form_state['values']['firstday'] != "") {
+        $lastday = $form_state['values']['lastday'];
+        $dateLast = \DateTime::createFromFormat('Y-m-d', $lastday);
+
+        if ($dateLast <= $dateFirst) {   
+          form_set_error('date', t('Date of departure cannot be before or the same as arrival'));
+        }
+      }
+    }
+  }
+  
+  if (preg_match("/\r|\n/", $form_state['values']['subject'])) {
+    form_set_error('subject', t('The subject cannot contain linebreaks.'));
+    watchdog('mail', 'Email injection exploit attempted in email form subject: ' . check_plain($form_state['values']['subject']), WATCHDOG_NOTICE);
+  }
+}
+
+/**
+ * Process the site-wide contact page form submission.
+ */
+function email_mail_page_form_submit($form, &$form_state) {
+  $object_type = $form_state['values']['object_type'];
+  $object_id = $form_state['values']['object_id'];
+  $field_name = $form_state['values']['field_name'];
+  $email = $form_state['values']['email'];
+
+  // Load entity
+  $objects = entity_load($object_type, array($object_id));
+  $object = $objects[$object_id];
+  $object_info = entity_get_info($object_type);
+
+  // E-mail address of the sender: as the form field is a text field,
+  // all instances of \r and \n have been automatically stripped from it.
+
+  $from = $form_state['values']['mail'];
+
+  $params['object'] = $object;
+  $params['subject'] = $form_state['values']['subject'];
+  $params['name'] = $form_state['values']['name'];
+  $params['message'] = $form_state['values']['message'];
+  $params['phone'] = $form_state['values']['phone'];
+  $params['email'] = $form_state['values']['email'];
+
+  if($field_name == "field_reserveringsaanvraag_email") {
+    $price = htmlspecialchars(urldecode($_GET["price"]));
+    $type = htmlspecialchars(urldecode($_GET["type"]));
+    $params['name'] = $form_state['values']['name'];
+    $params['surname'] = $form_state['values']['surname'];
+    $params['address'] = $form_state['values']['address'];
+    $params['location'] = $form_state['values']['location'];
+    $params['country'] = $form_state['values']['country'];
+    $params['birthdate'] = $form_state['values']['birthdate'];
+    $params['phone'] = $form_state['values']['phone'];
+    $params['mail-owner'] = $email;
+    $params['mail-customer'] = $from;
+
+    $params['firstday'] = $form_state['values']['firstday'];
+    $params['lastday'] = $form_state['values']['lastday'];
+    $params['persons'] = $form_state['values']['persons'];
+
+    $params['reservation-code'] = $form_state['values']['reservation-code'];
+    $params['newsletter'] = $form_state['values']['newsletter'];
+
+    $provision = "Op basis van verschillende tarieven, ga naar de advertentie en bekijk de tarieventabel";
+    if ($price != "tariefbasis") {
+      $provision = calculateProvision($type, $price, $params['firstday'], $params['lastday'], $params['persons']);
+    }
+    $params['provision'] = $provision;
+    $params['node-link'] = 'node/' . $object_id;
+  }
+
+   
+  if($field_name == "field_meer_info_email") {
+    $params['newsletter'] = $form_state['values']['newsletter'];
+    $params['advertentiecode'] = "ADVPR-".$object_id;
+    $params['mail-customer'] = $from;
+    $params['node-link'] = 'node/' . $object_id;
+  }
+
+  $path = "";
+  if (isset($object_info['path callback']) && function_exists($object_info['path callback'])) {
+    $path = $object_info['path callback']($object);
+  }
+  $params['url'] = url($path, array('absolute' => TRUE));
+
+  // Send the e-mail to the recipients:
+  // 
+  // RESERVERINGSAANVRAAG:
+  if($field_name == "field_reserveringsaanvraag_email") {
+    // Send the e-mail to the owner:
+    drupal_mail('email', 'booking1', $from, language_default(), $params, 'noreply@overwinteren.nl');
+
+    // Send the e-mail to the els@overwinteren.nl:
+   	drupal_mail('email', 'booking', 'els@overwinteren.nl', language_default(), $params, $from);
+
+    drupal_set_message(t('You will receive a response to your request as soon as possible.'));
+
+  // PROVISIE VRAAG:
+  } elseif($field_name == "field_meer_info_email") {
+    // Send the e-mail to the questioneer himself:
+    drupal_mail('email', 'provisionQuestion1', $from, language_default(), $params, 'noreply@overwinteren.nl');
+
+    // Send the e-mail to the els@overwinteren.nl:
+    drupal_mail('email', 'provisionQuestion', 'els@overwinteren.nl', language_default(), $params, $from);
+    
+    drupal_set_message(t('You will receive a response to your request as soon as possible.'));
+  
+  // DEFAULT:
+  } else {
+      drupal_mail('email', 'contact', $email, language_default(), $params, $from);
+
+      drupal_set_message(t('Your message has been sent.'));
+  }
+
+  // Log the operation:
+  flood_register_event('email');
+  watchdog('mail', '%name-from sent an e-mail at %form.', array('%name-from' => $form_state['values']['name'], '%form' => url($_GET['q'], array('absolute' => TRUE))));
+
+  // REDIRECT
+  $form_state['redirect'] = array(
+    'node/' . $object_id
+  );
+
+  //  $form_state['redirect'][] = drupal_get_destination();
+
+}
+
+/**
+ * Implements hook_mail().
+ */
+function email_mail($key, &$message, $params) {
+  $language = $message['language'];
+  switch ($key) {
+    case 'contact':
+      // Compose the body:
+      $message['body'][] = t('@name sent a message using the contact form at @url.', array('@name' => $params['name'], '@url' => $params['url']), array('langcode' => $language->language));
+      $message['body'][] .= $params['message'];
+      $message['body'][] .= "Tel: " . $params['phone'];
+      $message['body'][] .= "Mail: " . $params['email'];
+      $message['subject'] = "contact";
+
+      // Include the title of the entity, if one exists
+      $object = $params['object'];
+      if (isset($object->title) && !empty($object->title)) {
+        $message['subject'] = "[" . check_plain(preg_replace("/\r|\n/", '', $object->title)) . "]";
+      }
+      $message['subject'] .= " " . check_plain($params['subject']);
+      break;
+
+    case 'provisionQuestion':
+      // Compose the body:
+      $message['body'][] = t('@name sent a message using the contact form at @url.', array('@name' => $params['name'], '@url' => $params['url']), array('langcode' => $language->language));
+      $message['body'][] .= $params['message'];
+      $message['body'][] .= "Ad-code : " . $params['advertentiecode'];
+      $message['body'][] .= "Link naar de advertentie : " . $params['url'] . '/' . $params['node-link'];
+      $message['body'][] .= "Tel: " . $params['phone'];
+      $message['body'][] .= "Mail customer: " . $params['mail-customer'];
+      $message['body'][] .= ($params['newsletter']) ? "Nieuwsbrief ? : JA" : "Nieuwsbrief ? : NEE";
+      $message['subject'] = "contact";
+
+      // Include the title of the entity, if one exists
+      $object = $params['object'];
+      if (isset($object->title) && !empty($object->title)) {
+        $message['subject'] = "[" . check_plain(preg_replace("/\r|\n/", '', $object->title)) . "]";
+      }
+      $message['subject'] .= " " . check_plain($params['subject']);
+      break;
+
+    case 'provisionQuestion1':
+      // Compose the body:
+      $message['body'][] = t('@name sent a message using the contact form at @url.', array('@name' => $params['name'], '@url' => $params['url']), array('langcode' => $language->language));
+      $message['body'][] .= $params['message'];
+      $message['body'][] .= "Link naar de advertentie : " . $params['url'] . '/' . $params['node-link'];
+      $message['body'][] .= ($params['newsletter']) ? "Nieuwsbrief ? : JA" : "Nieuwsbrief ? : NEE";
+      $message['subject'] = "contact";
+
+      // Include the title of the entity, if one exists
+      $object = $params['object'];
+      if (isset($object->title) && !empty($object->title)) {
+        $message['subject'] = "[" . check_plain(preg_replace("/\r|\n/", '', $object->title)) . "]";
+      }
+      $message['subject'] .= " " . check_plain($params['subject']);
+      break;  
+
+    case 'booking':
+      // Compose the body:
+      $message['body'][] = t('@name sent a message using the booking form at @url.', array('@name' => $params['name'], '@url' => $params['url']), array('langcode' => $language->language));
+      $message['body'][] .= "";
+      $message['body'][] .= "Info KLANT";
+      $message['body'][] .= "Naam klant: " . $params['name'];
+      $message['body'][] .= "Voornaam klant: " . $params['surname'];
+      $message['body'][] .= "Adres: " . $params['address'];
+      $message['body'][] .= "Plaats: " . $params['location'];
+      $message['body'][] .= "Land: " . $params['country'];
+      $message['body'][] .= "Geboortedatum: " . $params['birthdate'];
+      $message['body'][] .= "Tel klant: " . $params['phone'];
+      $message['body'][] .= "Mail klant: " . $params['mail-customer'];
+      $message['body'][] .= ($params['newsletter']) ? "Nieuwsbrief ? : JA" : "Nieuwsbrief ? : NEE";
+      $message['body'][] .= "";
+      $message['body'][] .= "Info BOOKING";
+      $message['body'][] .= "Reservatie Code: " . $params['reservation-code'];
+      $message['body'][] .= "Link naar de advertentie : " . $params['url'] . '/' . $params['node-link'];
+      $message['body'][] .= "Dag van aankomst: " . $params['firstday'];
+      $message['body'][] .= "Dag van vertrek: " . $params['lastday'];
+      $message['body'][] .= "Aantal personen: " . $params['persons'];
+      $message['body'][] .= "Provisie: " . $params['provision'];
+      $message['body'][] .= "Opmerkingen: " . $params['message'];
+      $message['subject'] = t("booking on overwinteren.nl");
+
+      // Include the title of the entity, if one exists
+      $object = $params['object'];
+      if (isset($object->title) && !empty($object->title)) {
+        $message['subject'] = "[" . check_plain(preg_replace("/\r|\n/", '', $object->title)) . "]";
+      }
+      $message['subject'] .= " " . check_plain($params['subject']);
+      break;
+
+    case 'booking1':
+      // Compose the body:
+      $message['body'][] = t('@name sent a message using the booking form at @url.', array('@name' => $params['name'], '@url' => $params['url']), array('langcode' => $language->language));
+      $message['body'][] .= "";
+      $message['body'][] .= "Info KLANT";
+      $message['body'][] .= "Naam klant: " . $params['name'];
+      $message['body'][] .= "Voornaam klant: " . $params['surname'];
+      $message['body'][] .= "Adres: " . $params['address'];
+      $message['body'][] .= "Plaats: " . $params['location'];
+      $message['body'][] .= "Land: " . $params['country'];
+      $message['body'][] .= "Geboortedatum: " . $params['birthdate'];
+      $message['body'][] .= "Tel klant: " . $params['phone'];
+      $message['body'][] .= "Mail klant: " . $params['mail-customer'];
+      $message['body'][] .= ($params['newsletter']) ? "Nieuwsbrief ? : JA" : "Nieuwsbrief ? : NEE";
+      $message['body'][] .= "";
+      $message['body'][] .= "Info BOOKING";
+      $message['body'][] .= "Reservatie Code: " . $params['reservation-code'];
+      $message['body'][] .= "Link naar de advertentie : " . $params['url'] . '/' . $params['node-link'];
+      $message['body'][] .= "Dag van aankomst: " . $params['firstday'];
+      $message['body'][] .= "Dag van vertrek: " . $params['lastday'];
+      $message['body'][] .= "Aantal personen: " . $params['persons'];
+      $message['body'][] .= "Opmerkingen: " . $params['message'];
+      $message['subject'] = t("booking on overwinteren.nl");
+
+      // Include the title of the entity, if one exists
+      $object = $params['object'];
+      if (isset($object->title) && !empty($object->title)) {
+        $message['subject'] = "[" . check_plain(preg_replace("/\r|\n/", '', $object->title)) . "]";
+      }
+      $message['subject'] .= " " . check_plain($params['subject']);
+      break;  
+  }
+}
+
+
+//TODO Token support
+
+/**
+ * Implements hook_token_list().
+ *
+function email_token_list($type = 'all') {
+  if ($type == 'field' || $type == 'all') {
+    $tokens['email']['raw']       = t('Raw email address');
+    $tokens['email']['formatted'] = t('Formatted email address');
+    return $tokens;
+  }
+}
+
+/**
+ * Implements hook token_values().
+ *
+function email_token_values($type, $object = NULL, $options = array()) {
+  if ($type == 'field') {
+    $item = $object[0];
+    $tokens['raw']       = $item['email'];
+    $tokens['formatted'] = $item['view'];
+    return $tokens;
+  }
+}
+ */
+
+/**
+ * Settings for contact form
+ */
+function email_admin_settings() {
+  $form['email_hourly_threshold'] = array('#type' => 'select',
+    '#title' => t('Hourly threshold for a CCK Email contact form'),
+    '#options' => drupal_map_assoc(array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50)),
+    '#default_value' => variable_get('email_hourly_threshold', 10),
+    '#description' => t('The maximum number of contact form submissions a user can perform per hour.'),
+  );
+  return system_settings_form($form);
+}
+
+
+/**
+ * Implements hook_content_migrate_instance_alter().
+ *
+ * D6-D7 upgrade
+ * fixes new formatter names
+ */
+function email_content_migrate_instance_alter(&$instance_value, &$field_value) {
+  if ($field_value['module'] == 'email') {
+    foreach ($instance_value['display'] as $context => $settings) {
+      if (in_array($instance_value['display'][$context]['type'], array('default', 'plain', 'contact', 'spamspan'))) {
+        $instance_value['display'][$context]['type'] = 'email_' . $instance_value['display'][$context]['type'];
+      }
+    }
+  }
+}
+
+/**
+ * [calculateProvision description]
+ * @param  [type] $type     [description]
+ * @param  [type] $price    [description]
+ * @param  [type] $firstday [description]
+ * @param  [type] $lastday  [description]
+ * @param  [type] $persons  [description]
+ * @return [type]           [description]
+ */
+function calculateProvision($type, $price, $firstday, $lastday, $persons) {
+  $date1 = date_create($firstday);
+  $date2 = date_create($lastday);
+  $diff = date_diff($date1,$date2);
+  $totaldays = $diff->format("%R%a");
+
+  switch ($type) {
+    // day|Per nacht
+    case 'day':
+      $total = $price * ($totaldays);
+      break;
+
+    // wee|Per week
+    case 'wee':
+      $total = $price * ($totaldays / 7);
+      break;
+
+    // wee|Per maand
+    case 'mon':
+      $total = $price * ($totaldays / 30);
+      break;
+
+    // ppw|P.P. per week
+    case 'ppd':
+      $total = $price * $persons * ($totaldays / 7);
+      break;
+
+    // ppm|P.P. per maand
+    case 'ppw':
+      $total = $price * $persons * ($totaldays / 30);
+      break; 
+  }
+
+  $provision = $total * 0.075;
+
+  return round($provision, 2);
+}
+
+/**
+ * [countryNames description]
+ * @return [type] [description]
+ */
+function countryNames() {
+  return array(
+    "Afghanistan"=>"Afghanistan",
+    "Albania"=>"Albania",
+    "Algeria"=>"Algeria",
+    "Antigua and Barbuda"=>"Antigua and Barbuda",
+    "Argentina"=>"Argentina",
+    "Armenia"=>"Armenia",
+    "Australia"=>"Australia",
+    "Austria"=>"Austria",
+    "Azerbaijan"=>"Azerbaijan",
+    "Bahamas"=>"Bahamas",
+    "Bahrain"=>"Bahrain",
+    "Bangladesh"=>"Bangladesh",
+    "Barbados"=>"Barbados",
+    "Belarus"=>"Belarus",
+    "Belgium"=>"Belgium",
+    "Belize"=>"Belize",
+    "Benin"=>"Benin",
+    "Bhutan"=>"Bhutan",
+    "Bolivia"=>"Bolivia",
+    "Bosnia and Herzegovina"=>"Bosnia and Herzegovina",
+    "Botswana"=>"Botswana",
+    "Brazil"=>"Brazil",
+    "Brunei"=>"Brunei",
+    "Bulgaria"=>"Bulgaria",
+    "Burkina Faso"=>"Burkina Faso",
+    "Burundi"=>"Burundi",
+    "Cambodia"=>"Cambodia",
+    "Cameroon"=>"Cameroon",
+    "Canada"=>"Canada",
+    "Cape Verde"=>"Cape Verde",
+    "Central African Republic"=>"Central African Republic",
+    "Chad"=>"Chad",
+    "Chile"=>"Chile",
+    "China"=>"China",
+    "Colombi"=>"Colombi",
+    "Comoros"=>"Comoros",
+    "Congo (Brazzaville)"=>"Congo (Brazzaville)",
+    "Congo"=>"Congo",
+    "Costa Rica"=>"Costa Rica",
+    "Cote d'Ivoire"=>"Cote d'Ivoire",
+    "Croatia"=>"Croatia",
+    "Cuba"=>"Cuba",
+    "Cyprus"=>"Cyprus",
+    "Czech Republic"=>"Czech Republic",
+    "Denmark"=>"Denmark",
+    "Djibouti"=>"Djibouti",
+    "Dominica"=>"Dominica",
+    "Dominican Republic"=>"Dominican Republic",
+    "East Timor (Timor Timur)"=>"East Timor (Timor Timur)",
+    "Ecuador"=>"Ecuador",
+    "Egypt"=>"Egypt",
+    "El Salvador"=>"El Salvador",
+    "Equatorial Guinea"=>"Equatorial Guinea",
+    "Eritrea"=>"Eritrea",
+    "Estonia"=>"Estonia",
+    "Ethiopia"=>"Ethiopia",
+    "Fiji"=>"Fiji",
+    "Finland"=>"Finland",
+    "France"=>"France",
+    "Gabon"=>"Gabon",
+    "Gambia, The"=>"Gambia, The",
+    "Georgia"=>"Georgia",
+    "Germany"=>"Germany",
+    "Ghana"=>"Ghana",
+    "Greece"=>"Greece",
+    "Grenada"=>"Grenada",
+    "Guatemala"=>"Guatemala",
+    "Guinea"=>"Guinea",
+    "Guinea-Bissau"=>"Guinea-Bissau",
+    "Guyana"=>"Guyana",
+    "Haiti"=>"Haiti",
+    "Honduras"=>"Honduras",
+    "Hungary"=>"Hungary",
+    "Iceland"=>"Iceland",
+    "India"=>"India",
+    "Indonesia"=>"Indonesia",
+    "Iran"=>"Iran",
+    "Iraq"=>"Iraq",
+    "Ireland"=>"Ireland",
+    "Israel"=>"Israel",
+    "Italy"=>"Italy",
+    "Jamaica"=>"Jamaica",
+    "Japan"=>"Japan",
+    "Jordan"=>"Jordan",
+    "Kazakhstan"=>"Kazakhstan",
+    "Kenya"=>"Kenya",
+    "Kiribati"=>"Kiribati",
+    "Korea, North"=>"Korea, North",
+    "Korea, South"=>"Korea, South",
+    "Kuwait"=>"Kuwait",
+    "Kyrgyzstan"=>"Kyrgyzstan",
+    "Laos"=>"Laos",
+    "Latvia"=>"Latvia",
+    "Lebanon"=>"Lebanon",
+    "Lesotho"=>"Lesotho",
+    "Liberia"=>"Liberia",
+    "Libya"=>"Libya",
+    "Liechtenstein"=>"Liechtenstein",
+    "Lithuania"=>"Lithuania",
+    "Luxembourg"=>"Luxembourg",
+    "Macedonia"=>"Macedonia",
+    "Madagascar"=>"Madagascar",
+    "Malawi"=>"Malawi",
+    "Malaysia"=>"Malaysia",
+    "Maldives"=>"Maldives",
+    "Mali"=>"Mali",
+    "Malta"=>"Malta",
+    "Marshall Islands"=>"Marshall Islands",
+    "Mauritania"=>"Mauritania",
+    "Mauritius"=>"Mauritius",
+    "Mexico"=>"Mexico",
+    "Micronesia"=>"Micronesia",
+    "Moldova"=>"Moldova",
+    "Monaco"=>"Monaco",
+    "Mongolia"=>"Mongolia",
+    "Morocco"=>"Morocco",
+    "Mozambique"=>"Mozambique",
+    "Myanmar"=>"Myanmar",
+    "Namibia"=>"Namibia",
+    "Nauru"=>"Nauru",
+    "Nepa"=>"Nepa",
+    "Netherlands"=>"Netherlands",
+    "New Zealand"=>"New Zealand",
+    "Nicaragua"=>"Nicaragua",
+    "Niger"=>"Niger",
+    "Nigeria"=>"Nigeria",
+    "Norway"=>"Norway",
+    "Oman"=>"Oman",
+    "Pakistan"=>"Pakistan",
+    "Palau"=>"Palau",
+    "Panama"=>"Panama",
+    "Papua New Guinea"=>"Papua New Guinea",
+    "Paraguay"=>"Paraguay",
+    "Peru"=>"Peru",
+    "Philippines"=>"Philippines",
+    "Poland"=>"Poland",
+    "Portugal"=>"Portugal",
+    "Qatar"=>"Qatar",
+    "Romania"=>"Romania",
+    "Russia"=>"Russia",
+    "Rwanda"=>"Rwanda",
+    "Saint Kitts and Nevis"=>"Saint Kitts and Nevis",
+    "Saint Lucia"=>"Saint Lucia",
+    "Saint Vincent"=>"Saint Vincent",
+    "Samoa"=>"Samoa",
+    "San Marino"=>"San Marino",
+    "Sao Tome and Principe"=>"Sao Tome and Principe",
+    "Saudi Arabia"=>"Saudi Arabia",
+    "Senegal"=>"Senegal",
+    "Serbia and Montenegro"=>"Serbia and Montenegro",
+    "Seychelles"=>"Seychelles",
+    "Sierra Leone"=>"Sierra Leone",
+    "Singapore"=>"Singapore",
+    "Slovakia"=>"Slovakia",
+    "Slovenia"=>"Slovenia",
+    "Solomon Islands"=>"Solomon Islands",
+    "Somalia"=>"Somalia",
+    "South Africa"=>"South Africa",
+    "Spain"=>"Spain",
+    "Sri Lanka"=>"Sri Lanka",
+    "Sudan"=>"Sudan",
+    "Suriname"=>"Suriname",
+    "Swaziland"=>"Swaziland",
+    "Sweden"=>"Sweden",
+    "Switzerland"=>"Switzerland",
+    "Syria"=>"Syria",
+    "Taiwan"=>"Taiwan",
+    "Tajikistan"=>"Tajikistan",
+    "Tanzania"=>"Tanzania",
+    "Thailand"=>"Thailand",
+    "Togo"=>"Togo",
+    "Tonga"=>"Tonga",
+    "Trinidad and Tobago"=>"Trinidad and Tobago",
+    "Tunisia"=>"Tunisia",
+    "Turkey"=>"Turkey",
+    "Turkmenistan"=>"Turkmenistan",
+    "Tuvalu"=>"Tuvalu",
+    "Uganda"=>"Uganda",
+    "Ukraine"=>"Ukraine",
+    "United Arab Emirates"=>"United Arab Emirates",
+    "United Kingdom"=>"United Kingdom",
+    "United States"=>"United States",
+    "Uruguay"=>"Uruguay",
+    "Uzbekistan"=>"Uzbekistan",
+    "Vanuatu"=>"Vanuatu",
+    "Vatican City"=>"Vatican City",
+    "Venezuela"=>"Venezuela",
+    "Vietnam"=>"Vietnam",
+    "Yemen"=>"Yemen",
+    "Zambia"=>"Zambia",
+    "Zimbabwe"=>"Zimbabwe"
+    );
+}

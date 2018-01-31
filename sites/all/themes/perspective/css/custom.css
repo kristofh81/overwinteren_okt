@@ -1,0 +1,420 @@
+/* hiding elements */
+.front .node-promoted h2,
+#node-2450 .form-type-item,
+#node-2450 .links,
+#node-1090 .links,
+#node-1144 .statistics_counter,
+#node-1145 .statistics_counter,
+.page-node-1092 .statistics_counter,
+/*velden user pagina email en tijdzone*/
+.page-user-edit #edit-mimemail,
+.page-user-edit #edit-timezone,
+/*tekstopmaak info html*/
+#edit-body-und-0-format,
+.view-aanbiedingen-en-last-minutes .statistics_counter,
+.view-aanbiedingen-en-last-minutes > ul > li.statistics_counter.last,
+#node-1144 > div.content > div.form-item.form-type-item,
+#node-1145 > div.content > div.form-item.form-type-item,
+#node-1145 > ul.links,
+.node-aanbiedingen > ul > li.node-readmore.first > a,
+.node-aanbiedingen > ul.links,
+.node-advertentie.node-teaser > div > footer,
+.node-advertentie-provisiebasis.node-teaser > div > footer,
+.view-id-aanbiedingen_en_last_minutes > div > div > div.views-field.views-field-title,
+.view-id-aanbiedingen_en_last_minutes > div > div > div.views-field.views-field-body,
+.node-advertentie .node-teaser .contextual-links-region > div > footer,
+.teaser-zakelijk > ul.links,
+#node-2616 > div > footer > ul,
+.node-bedrijfspresentatie > div > footer > ul,
+#edit-text-reservatie,
+#node-2871 > div > h4,
+#block-system-main > div > article > div > .advertentie-code
+{
+  	display: none;
+}
+
+.oneByOne1 {
+	height: 360px;
+}
+
+.advertentie-code {
+	float: right;
+	font-style: italic
+}
+
+.laatst-geplaatste-ads > .view-content > table {
+	border: none;
+}
+
+.laatst-geplaatste-ads > .view-content > table > tbody > tr > td {
+	border: 1px solid #ffa666;
+	padding: 4px;
+	text-align: center;
+	width: 14%;
+}
+
+.uitgelicht-image > a > div > img {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#block-views-diversen-block > h3,
+#block-views-randomads-block > h3,
+#block-views-uitgelicht-3-block > h3,
+.uitgelicht-title,
+.uitgelicht-country
+{
+	text-align: center;
+}
+
+.laatste-advertenties-img > a > div> img {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 80px;
+}
+
+#block-views-094992c04a35486be53b6e3c2e4a2779 h2,
+#block-views-52a11d4cc0cd5bded4dc4b11152874b3 > h2
+{
+	font-size: 22px;
+}
+
+.page-node .form-text{
+	width: 100%;
+}
+
+.view-aanbiedingen-en-last-minutes > div.content > .views-row {
+	margin : 0 20px 0 20px;
+}
+
+/* overwinteren theming */
+.taxonomy .field-item {
+	font-size :20px;
+	font-weight : bold;
+}
+	
+.teasertext, .teasertext p{
+	font-family: "Helvetica Neue",  verdana, helvetica, sans-serif;
+	font-size:13px;
+}
+.indent-hidden {
+	float:left;
+	width: 160px;
+	color: #fff;
+}	
+.tekstbold {
+	float:left;
+	width: 160px;
+	font-weight: bold;
+	}
+.kolom2{
+	float: left;
+	overflow:hidden;
+	width: 50%;
+	}
+.foto {
+	margin: 10px 0 0 10px;/* top right bottom left */
+	border: 5px;
+	}
+
+.tekst	{
+	margin: 0 0 0 10px;/* top right bottom left */
+	}
+#object {
+	padding-right: 5px;
+	}
+.home1 {
+	float:left;
+	width: 64%;
+}
+
+#header {
+	background-color: blue;
+}
+
+.node h2.title, h1.page-title{
+	color: #FF6600;
+}
+
+.gallery-node .grid_2 {
+	margin-right:0;
+}
+
+.gallery-node img, .teaser-pic img {
+	padding: 5px;
+	border: 1px solid;
+	margin-left:-10px;
+	margin-right:-10px;
+}
+
+.gallery-node img {
+	width: 138px;
+	height: 110px;
+	margin-right:0;
+}
+
+.teaser-pic img {
+	width: 128px;
+	height: 100px;
+}
+
+nav#horizontal {
+	float: left;
+}
+/* Aanbiedingen block*/
+
+.view-aanbiedingen-en-last-minutes .view-content h2 {
+	font-size: 22px;
+}
+
+.view-aanbiedingen-en-last-minutes .view-content .field-items h2 {
+	font-size: 18px;
+}
+
+.view-aanbiedingen-en-last-minutes footer {
+	max-width:99%;
+}
+
+.view-aanbiedingen-en-last-minutes .teaser-pic {
+	margin-right: -24px;
+	margin-bottom: -16px;
+}
+
+
+.view-aanbiedingen-en-last-minutes > div > div {
+	border-bottom: 2px solid #ffa666;
+}
+
+.view-aanbiedingen-en-last-minutes > div > div > div > h2 {
+ 	padding: 4px;
+}
+
+.view-aanbiedingen-en-last-minutes {
+	border-top: 2px solid #ffa666;
+	border-left: 2px solid #ffa666;
+	border-right: 2px solid #ffa666;
+	background-color: #fff2e6;
+}
+
+.view-aanbiedingen-en-last-minutes >div >.views-row {
+	padding: 14px;
+}
+
+.node-aanbiedingen > div > div.field.field-name-body.field-type-text-with-summary.field-label-above {
+	border: 2px solid #ffa666;
+	padding: 10px;
+}
+
+.view-aanbiedingen-en-last-minutes >div >.views-row > article > header {
+	display: none;
+}
+
+#block-fblikebutton-fblikebutton-dynamic-block > div > iframe {
+	padding-top: 50px;
+}
+
+/* FORMS - NEWSLETTER - USER/login - EMAIL FIELD */
+.webform-newsletter-field-name, .webform-newsletter-field-mail,
+#user-login > div > .form-type-textfield > .description,
+#user-login > div > div > #edit-name, #user-login > div > div > #edit-pass,
+#email-mail-page-form > div > div > #edit-name, 
+#email-mail-page-form > div > div > #edit-mail, 
+#email-mail-page-form > div > div > #edit-phone, 
+#email-mail-page-form > div > div > #edit-subject,
+#edit-surname,
+#edit-address,
+#edit-location,
+#edit-birthdate,
+#edit-mail-control,
+#edit-reservation-code,
+#edit-remarks,
+#edit-country
+{
+	width: 100%;
+}
+
+/*
+#email-mail-page-form > div > div > label
+{
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+
+#email-mail-page-form > div > div > #edit-name, 
+#email-mail-page-form > div > div > #edit-mail, 
+#email-mail-page-form > div > div > #edit-phone, 
+#email-mail-page-form > div > div > #edit-subject
+{
+	float: right;
+}
+*/
+
+#search-block-form #edit-search-block-form--2 {
+	width: 65%;
+}
+
+#smk_pagination a {
+	max-width: 18%;
+}
+
+h2 a {
+	color: #fe481a;
+}
+
+
+.language-switcher-locale-url .active{
+	color: #ff6b01;
+}
+
+.captcha .fieldset-description
+{
+	font-size: 9px;
+}
+
+.captcha .fieldset-legend{
+	font-size: 9px;
+	display: none;
+}
+
+.captcha .description{
+	font-size: 9px;
+	display: none;
+}
+
+.teaser-summary {
+	max-height: 104px;
+	overflow: hidden;
+}
+
+.teaser-summary > div {
+	margin-top: -4px;
+}
+
+.teaser-summary > div {
+	line-height: inherit;
+}
+
+#block-system-main > div > div > div:nth-child(4) > div:nth-child(2) > div:nth-child(6) > span > div.field.field-name-field-atk-vraagprijs.field-type-text.field-label-hidden > div > div:before
+{
+	content: "€ ";
+}
+
+/* CALENDAR */
+
+.cal-buttons {
+	text-align: center;
+}
+
+.cal-buttons button.cal-backward {
+	content: " << ";
+}
+
+.cal-buttons button.cal-forward {
+	content: " >> ";
+}
+
+.curSelection.bold {
+	color : #337ab7;
+}
+
+#cv_nav5_cv_monthgrid_hspacer {
+	display: none;
+}
+
+@media all and (min-width: 980px){
+	.contact .tekstbold{
+		margin-left: -20px;
+	}
+}
+@media all and (max-width: 770px){
+	.laatst-geplaatste-ads > .view-content > table > tbody > tr > td {
+		max-width: 40px;
+	}
+	.laatste-advertenties-img > a > div> img {
+		display: block;
+	    margin-left: auto;
+	    margin-right: auto;
+	    min-width: 38px;
+	}
+	#block-views-094992c04a35486be53b6e3c2e4a2779 > div.content > div > div > table > tbody > tr > td.col-2 > div.views-field.views-field-title > span > a{
+		max-width: 38px;
+	}
+
+	select {
+   -webkit-appearance: none;
+   -moz-appearance: none;
+   appearance: none;
+}
+
+	#horizontal > select > option:before {
+		content: " ";
+	}
+
+	.i18n-nl #horizontal > select > option:nth-child(2),
+	.i18n-nl #horizontal > select > option:nth-child(55),
+	.i18n-nl #horizontal > select > option:nth-child(68),
+	.i18n-nl #horizontal > select > option:nth-child(89),
+	.i18n-nl #horizontal > select > option:nth-child(95),
+	.i18n-en #horizontal > select > option:nth-child(2),
+	.i18n-en #horizontal > select > option:nth-child(51),
+	.i18n-en #horizontal > select > option:nth-child(65),
+	.i18n-en #horizontal > select > option:nth-child(71)
+	{
+		padding: 0;
+		font-weight: bold;
+		font-size: 16px;
+	}
+
+}
+
+@media screen and (min-width: 770px) and (max-width: 980px){
+
+	nav#horizontal {
+	    float: left;
+	    width: 700px;
+	    margin-left: -200px;
+		top: 60px;
+	}
+
+	#nav li a{
+		padding: 10px 5px 8px;
+		font-size: small;
+
+	}
+	.top_head_separator{
+		height : 132px;
+	}	
+
+}
+
+@media screen and (min-width: 720px) and (max-width: 770px){
+
+	nav#horizontal {
+	    float: left;
+	    width: 700px;
+	    margin-left: -200px;
+		top: -16px;
+	}
+
+	#nav li a{
+		padding: 10px 5px 8px;
+		font-size: small;
+
+	}
+	.top_head_separator{
+		height : 132px;
+	}	
+
+}
+
+
+#block-views-custom-search-block > div.content > div > div.view-content > div.views-row {
+	border-bottom: 1px solid #ffa666;
+	padding: 10px;
+}
+
+.front-searchbox {
+	padding: 10px 0 20px 0;
+}

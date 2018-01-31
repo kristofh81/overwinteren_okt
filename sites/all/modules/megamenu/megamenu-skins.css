@@ -1,0 +1,237 @@
+/* Skins
+ *
+ * Skin styles should be limited to typography, colors, and
+ * backgrounds. Except for text elements (i.e. h3, megamenu-title,
+ * etc.), widths, margins, and padding of structural blocks are
+ * set in the administration area.
+ *--------------------------------------------------------*/
+
+/* @group Minimal */
+.megamenu-skin-minimal {
+  background-color:#bbb;
+}
+
+.megamenu-skin-minimal .megamenu-title {
+  font-size:100%;
+  font-weight:normal;
+}
+
+.megamenu-skin-minimal .megamenu-bin {
+  background-color:#eee;
+  border:2px groove #7e7e7e;
+  -moz-border-radius:0.583em;
+  -webkit-border-radius:0.583em;
+  border-radius:0.583em;
+}
+
+.megamenu-skin-minimal .megamenu-slot {
+  margin-right: 4px;
+  border-bottom:1px solid #bbb;
+}
+
+.megamenu-skin-minimal .megamenu-slot-title,
+.megamenu-skin-minimal .megamenu-slot-title a {
+  background-color:#bbb;
+  color:#fff; /* white */
+  font-size:100%;
+  text-align:center;
+  text-transform:uppercase;
+}
+
+.megamenu-skin-minimal .megamenu-link {
+  font-size:85%;
+}
+/* @end Minimal*/
+
+
+
+/* @group friendly (ucsf theme)*/
+
+/* overrides - begin */
+.megamenu-skin-friendly li{
+  margin:0px;
+  padding:0px;
+  line-height:120%;
+}
+.megamenu-skin-friendly *{
+  list-style:none;
+}
+/* overrides - end */
+
+
+.megamenu-skin-friendly{
+  
+  background: #222;
+    background: -moz-linear-gradient(#fff,#eee);
+    background: -o-linear-gradient(#fff,#eee);
+    background: -webkit-gradient(linear,0% 0%,0% 100%,from(#fff),to(#eee));
+    background: -webkit-linear-gradient(#fff,#eee);
+
+  font-family:helvetica,verdana,tahoma,arial,sans-serif;
+  
+  padding:14px;
+}
+.megamenu-skin-friendly a:hover{
+  text-decoration:none;
+}
+.megamenu-skin-friendly .megamenu-parent-title{
+  text-transform:uppercase;
+}
+.megamenu-skin-friendly .megamenu-parent-title{
+  font-weight:normal;
+  font-size:100%;
+  vertical-align:bottom;
+}
+.megamenu-skin-friendly .megamenu-parent-title a,
+.megamenu-skin-friendly .megamenu-parent-title span,
+.megamenu-skin-friendly .megamenu-parent-title a:visited{
+  font-style:normal;
+  color:#000;
+  padding:5px;
+}
+.megamenu-skin-friendly .megamenu-parent-title a,
+.megamenu-skin-friendly .megamenu-parent-title span,
+.megamenu-skin-friendly .hovering .megamenu-parent-title a:hover{
+  -moz-border-radius:4px;
+  -webkit-border-radius:4px;
+  -moz-border-radius:4px;
+  -webkit-border-radius:4px;
+}
+.megamenu-skin-friendly .megamenu-slot,
+.megamenu-skin-friendly .megamenu-slot a:hover{
+  -moz-border-radius:4px;
+  -webkit-border-radius:4px;
+  border-radius:4px;
+}
+.megamenu-skin-friendly li.megamenu-slot{
+  /*width:auto;*/
+  /*max-width:200px;*/
+  width:200px;
+  margin:2px 2px auto auto;
+  background:#00325b; /* 540 blue */
+  padding-top:2px;
+  padding-bottom:2px;
+}
+.megamenu-skin-friendly li.megamenu-slot:hover{
+  background-color:#00325b; /* 540 blue */
+}
+.megamenu-skin-friendly .hovering .megamenu-parent-title a,
+.megamenu-skin-friendly .hovering .megamenu-parent-title span{
+  color:#eee;
+  background:#00325b; /* 540 blue */
+}
+.megamenu-skin-friendly .hovering .megamenu-parent-title span:hover,
+.megamenu-skin-friendly .megamenu-slot-title span{
+  cursor:default;
+}
+.megamenu-skin-friendly .hovering .megamenu-parent-title a:hover{
+  color:#eee;
+  background:#00325b; /* 540 blue */
+}
+.megamenu-skin-friendly .megamenu-bin{
+  margin-top:5px;
+  padding:0px;
+  color:#eee;
+}
+.megamenu-skin-friendly .megamenu-slot-title{
+  font-family:Helvetica,Verdana,Arial,sans-serif;
+  color:#eee; /* 80% white on pharmacy dark gold */
+}
+.megamenu-skin-friendly .megamenu-slot-title a:link,
+.megamenu-skin-friendly .megamenu-slot-title a:visited{
+  color:#eee; /* 80% white on pharmacy dark gold */
+}
+.megamenu-skin-friendly .megamenu-slot-title a,
+.megamenu-skin-friendly .megamenu-slot-title span,
+.megamenu-skin-friendly .megamenu-item a,
+.megamenu-skin-friendly .megamenu-item span{
+  padding:0;
+  
+}
+.megamenu-skin-friendly .megamenu-slot a{
+  color:#fff;
+}
+.megamenu-skin-friendly .megamenu-slot a:hover{
+  color:#fff;
+  background:#00325b; /* 540 blue */
+}
+.megamenu-skin-friendly .megamenu-item a,
+.megamenu-skin-friendly .megamenu-item span{
+  color:#eee;
+  font-size:100%;
+}
+.megamenu-skin-friendly .megamenu-item a:hover{
+  color:#eee;
+  background:#00325b; /* 540 blue */
+}
+.megamenu-skin-friendly li.megamenu-slot{
+  z-index:3000;
+  background:#00325b; /* 540 blue */
+  padding-left: 8px;
+  border:0px;
+  border-radius:4px;
+  -moz-border-radius:4px;
+  -webkit-border-radius:4px;
+  -opera-border-radius:4px;
+  -khtml-border-radius:4px;
+  -khtml-box-shadow:rgba(0,0,0,.33) 4px 4px 4px;
+  -moz-box-shadow:rgba(0,0,0,.33) 4px 4px 4px;
+  box-shadow:rgba(0,0,0,.33) 4px 4px 4px;
+}
+.megamenu-skin-friendly ul a:hover{
+  text-decoration:none;
+}
+
+.megamenu-skin-friendly .megamenu-slot-title{
+  font-size:100%;
+  line-height:100%;
+  text-decoration: none;
+}
+
+/* start - ensure that #megamenu-menu bar is the same height in all browsers
+ * very frustrating to get this correct - do not touch!
+ *--------------------------------------------------------*/
+.megamenu-skin-friendly .megamenu-item a,
+.megamenu-skin-friendly .megamenu-item span
+{
+  font-size:100%;
+}
+.megamenu-menu,
+.megamenu-skin-friendly .megamenu-parent,
+.megamenu-skin-friendly .megamenu-parent-title
+/* this is the key -- all these must be set to the same value */
+{
+  font-size:100%;
+  line-height:110%;
+  height:100%;
+}
+
+.megamenu-skin-friendly .megamenu-parent-title a,
+.megamenu-skin-friendly .megamenu-parent-title a:link,
+.megamenu-skin-friendly .megamenu-parent-title a:visited,
+.megamenu-skin-friendly .megamenu-parent-title a:focus,
+.megamenu-skin-friendly .megamenu-parent-title a:hover,
+.megamenu-skin-friendly .megamenu-parent-title a:active,
+.megamenu-skin-friendly .megamenu-parent-title span
+{
+  padding:8px 8px;
+
+}
+
+/* end - ensure that #megamenu-menu bar is the same height in all browsers
+ *--------------------------------------------------------*/
+.megamenu-skin-friendly .megamenu-parent-title a:hover {
+  text-decoration:none;
+  color:#fff;
+  background:#00325b; /* 540 blue coated */
+}
+/* @end Friendly */
+
+.megamenu-items li{
+  padding-left: 20px;
+}
+
+.megamenu-skin-friendly .megamenu-slot a:hover{
+  color:#fff;
+  background:#00325b; /* 540 blue */
+}

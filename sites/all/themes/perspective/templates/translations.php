@@ -1,0 +1,111 @@
+<?php
+
+global $language;
+  //get the current language
+  $current_lang = $language->language;
+
+$transl = array(
+
+
+"Zakelijk" => "Professional",
+"Particulier" => "Privat",
+
+"Bestaande bouw" => "Existing building",
+"Nieuwbouw" => "New Construction",
+"Project" => "Project",
+"Vrijstaand" => "Detached",
+"Geschakeld" =>  "Switched",
+"Tussenwoning" => "Townhouse",
+
+"Andere" => "Other",
+"Appartement" => "Apartment",
+"Bed en Breakfast" => "Bed and Breakfast",
+"Verschillende" => "Different types",
+"Boerderij" => "Farmhouse",
+"Vakantiewoning" => "Holiday home",
+"Dorpswoning" => "Town house",
+
+"Zee" => "Seaside",
+"Zeezicht" => "View on the sea",
+"Landelijk" => "Countryside",
+"Bos" => "Forrestal",
+"Dorp" => "Village",
+"Stad"=> "City",
+
+"Bespreekbaar" => "Agreeable",
+"Per navraag" => "On request",
+"Op aanvraag" => "On request",
+"Per nacht" => "Daily",
+"Per week" => "Weekly",
+"Per maand" => "Monthly",
+"P.P. per nacht" => "Daily per person",
+"P.P. per week" => "Weekly per person",
+"P.P. per maand" => "Monthly per person",
+"Prijs vanaf" => "Price from",
+"Prijs vanaf, per nacht" => "Price from, daily base",
+"Prijs vanaf, per week" => "Price from, weekly base",
+"Prijs vanaf, per maand" => "Price from, monthly base",
+"Zie in beschrijving accommodatie" => "See in description",
+"Zie op onze website" => "See on our website",
+
+"Zwembad" => "Swimming pool", 
+"Gedeeld zwembad" => "Shared pool", 
+"Kinderbed" => "Cot",
+"Ligbad" => "Bathtub",
+ "Open haard"=>"Fireplace",
+ "Vaatwasser"=> "Dishwasher",
+ "Wasmachine" => "Washing machine",
+ "Bedlinnen" => "Bedding",
+ "Rolstoeltoegankelijk" => "Wheelchair accessible",
+ "Huisdieren toegestaan" => "Pets allowed",
+
+"Bouwgrond" => "Building lot",
+"Ruïne" => "ruin",
+"Stadswoning" => "town house",
+"Bestaande bouw" => "existing building",
+"Nieuwbouw" => "new building",
+"Project" => "project",
+"Vrijstaand" => "detached",
+"Geschakeld" => "semidetached",
+"Tussenwoning" => "row house",
+"Houtkachel" => "wood stove",
+"Centrale verwarming" => "central heating",
+"Kindvriendelijk" => "child-friendly",
+"Dubbel glas" => "double glazing",
+"Zonnepanelen" => "solar panels",
+"Geïsoleerd" => "insulated",
+"Parkeerplaats" => "parking place",
+"Centrale verwarming" => "central heating",
+"Houtkachel" => "wood stove",
+"Electrische radiator" => "electric radiator",
+"Roken toegestaan" => "smoking allowed",
+
+ 
+"Woonkamer" => "living-room",
+"Slaapkamers" => "bedrooms",
+"Badkamers" => "bathrooms",
+"Toilet" => "toilet",
+"Keuken" => "kitchen",
+"Bijkeuken" => "pantry",
+"Berging" => "depository",
+"Schuur" => "shed",
+"Hobbyruimte" => "hobby room",
+"Kelder" => "basement",
+"Terrassen" => "terraces",
+"Dakterras" => "roof terrace",
+"Balkon" => "balcony",
+"Tuin" => "garden",
+"Tuinhuis" => "pavilion",
+"Gastenverblijf" => "guesthouse",
+ 
+"Inclusief inboedel" => "including furnishings",
+"Exclusief inboedel" => "excluding furnishings",
+"Overname inboedel mogelijk" => "takeover furnishings possible",
+"Kosten koper" => "purchasing costs payable by the purchaser",
+"Vrij op naam" => "purchasing costs payable by the vendor",
+"Zie advertentie" => "see advertisement",
+"Zie onze website" => "see our website",
+"Geschikt voor verhuur" => "suitable for rental",
+
+
+);

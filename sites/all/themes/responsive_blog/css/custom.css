@@ -1,0 +1,123 @@
+#banner {
+	height : 180px;
+	background : url(../banners/rotate.php) no-repeat, linear-gradient(#eb01a5, #d13531);
+	margin: auto;
+    width: 94%;
+}
+
+#main {
+	padding: 0;
+}
+
+#preface-area .block, .region-content-top .block, #footer-area .block{
+	margin: -20px 0 0 0;
+	padding: 4px;
+	background-color: #eee;
+}
+
+#preface-area {
+    padding: 0 3% 0;
+    height: 50px;
+    top: 0;
+}
+
+#block-locale-language{
+	padding: 0;
+	margin: 0;
+}
+
+.region-preface-last{
+	float: right;
+}
+
+#navigation div {
+    margin: 0;
+}
+
+.language-switcher-locale-url li{
+	display: inline;
+	margin: 2px 0 0 4px;
+}
+
+.language-switcher-locale-url li .active{
+	color: #FF6600;
+}
+
+
+body{
+	background-color:#0000FF;
+	background: url(../images/body.gif);
+}
+
+/* overwinteren theming */
+.teaserfoto {
+	float:left;
+	width: 150px;
+	padding-left: 10px;
+	position: inline;
+	}
+	
+.teasertext, .teasertext p{
+	font-family: "Helvetica Neue",  verdana, helvetica, sans-serif;
+	font-size:13px;
+	}
+	
+.tekstbold {
+	float:left;
+	width: 170px;
+	font-weight: bold;
+	padding-left: 20px;
+	}
+.kolom2{
+	float: left;
+	overflow:hidden;
+	width: 500px;
+	}
+.bodytekst {
+	padding-left: 10px;
+	padding-right: 10px;
+	}
+.foto {
+	margin: 10px 0 0 10px;/* top right bottom left */
+	border: 5px;
+	}
+.kleinfoto {
+	float:left;
+	width: 128px;
+	height: 100px;
+	padding: 6px;
+	float:left;
+	}
+
+.tekst	{
+	margin: 0 0 0 10px;/* top right bottom left */
+	}
+#object {
+	padding-right: 5px;
+	}
+.home1 {
+	float:left;
+	width: 440px;
+}
+
+#header {
+	background-color: blue;
+}
+
+.node h2.title, h1.page-title{
+	color: #FF6600;
+}
+
+.webform-newsletter-field-name, .webform-newsletter-field-mail
+{
+	width: 90%;
+}
+#edit-pass, #edit-name, #edit-search-block-form--2{
+	width: 90%;
+}
+
+#block-views-newsletter-dutch-block .submitted, #block-views-newsletter-english-block .submitted,
+#block-views-newsletter-dutch-block .title, #block-views-newsletter-english-block .title
+{
+	display: none;
+}
